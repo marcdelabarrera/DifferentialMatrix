@@ -1,0 +1,7 @@
+name = "DifferentialMatrix"
+uuid = "7dd6957a-1d0c-454b-81d0-fba49a45b384"
+version = "0.1.0"
+
+
+[deps]
+SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
