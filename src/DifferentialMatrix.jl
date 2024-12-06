@@ -1,6 +1,6 @@
 module DifferentialMatrix
 
-export compute_vec_index, compute_vec_index_inv, create_diff_matrix
+export compute_vec_index, compute_vec_index_inv, create_diff_matrix, vectorize_grid
 
 using SparseArrays
 
@@ -58,7 +58,18 @@ function compute_vec_index_inv(vec_index::Int64, shape::Tuple, order::String="F"
     return tuple(index...)
 end
 
+"""
+Vectorizes the points of a grid of a given dimension. 
+"""
+function vectorize_grid(x::Array, shape::Tuple, dim::Int, order::String="F")
+    if order != "F"
+        error("Order must be F. C-style ordering is not supported.")
+    end
 
+    @assert length(x) == shape[dim]
+
+    return repeat(x, outer = prod(shape[dim+1:end]), inner = prod(shape[1:dim-1]))
+end
 
 function create_diff_matrix_1d(shape::Tuple, 
     direction::String="forward",
