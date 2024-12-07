@@ -1,8 +1,11 @@
 module DifferentialMatrix
 
-export compute_vec_index, compute_vec_index_inv, create_diff_matrix, vectorize_grid
+export compute_vec_index, compute_vec_index_inv, create_diff_matrix, vectorize_grid, CenteredDifference
 
 using SparseArrays
+
+include("DiffEqOperators.jl")
+
 
 
 """
@@ -178,5 +181,7 @@ function create_diff_matrix(shape::Tuple,
 
     return sparse(D_row, D_col, D_val, prod(shape), prod(shape))
 end
+
+
 
 end
