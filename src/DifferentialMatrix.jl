@@ -45,6 +45,63 @@ end
 
 
 
+
+"""
+Computes first derivative of a function f at a point x[ix] using either forward or backward difference.
+"""
+function compute_first_derivative(f::Vector, x::Vector, ix::Int, direction::Symbol;errors::Symbol=:warn)::Float64
+    if direction == :forward
+        if ix == length(x)
+            if errors == :raise
+                error("Error: forward difference at the right boundary, cannot compute derivative")
+            end
+            if errors == :warn 
+                println("Warning: forward difference at the right boundary, using backward difference instead")
+            elseif errors == :ignore
+                nothing
+            else
+                error("Invalid error handling option: $errors. Must be either :warn, :raise, or :ignore.")
+            end
+            return compute_first_derivative(f, x, ix, :backward; errors=errors)
+        else
+            return (f[ix+1] - f[ix]) / (x[ix+1] - x[ix])
+        end
+    elseif direction == :backward
+        if ix == 1
+            if errors == :raise
+                error("Error: backward difference at the left boundary, cannot compute derivative")
+            end
+            if errors == :warn
+                println("Warning: backward difference at the left boundary, using forward difference instead")
+            elseif errors == :ignore
+                nothing
+            else
+                error("Invalid error handling option: $errors. Must be either :warn, :raise, or :ignore.")
+            end
+            return compute_first_derivative(f, x, ix, :forward; errors=errors)
+        end
+        return (f[ix] - f[ix-1]) / (x[ix] - x[ix-1])
+    else
+        error("Invalid direction: $direction. Must be either :forward or :backward.")
+    end
+end
+
+"""
+Computes second derivative of a function f at a point x[ix] using central difference for interior points.
+    For the boundaries, it assumes a ghost point with the same value as the boundary point.
+"""
+function compute_second_derivative(f::Vector, x::Vector, ix::Int)::Float64
+    if ix != 1 && ix != length(x)
+        return (f[ix+1] - 2*f[ix] + f[ix-1]) / ((x[ix+1] - x[ix]) * (x[ix] - x[ix-1]))
+    elseif ix == 1
+        return (f[ix+1] - 2*f[ix] + f[ix]) / ((x[ix+1] - x[ix])^2)
+    else # ix == length(x)
+        return (f[ix-1] - 2*f[ix] + f[ix]) / ((x[ix] - x[ix-1])^2)
+    end
+end
+
+
+
 function compute_vec_index_inv(vec_index::Int64, shape::Tuple, order::String="F")::Tuple
     @assert vec_index <= prod(shape)
     dims = length(shape)
@@ -77,6 +134,7 @@ end
 function create_diff_matrix_1d(shape::Tuple, 
     direction::String="forward",
     Delta::Union{Float64, Array{Float64}}=1.)
+    
     D_row, D_col, D_val = Int[], Int[], Float64[]
     if isa(Delta, Float64)
         Delta = fill(Delta, shape[1]-1)
